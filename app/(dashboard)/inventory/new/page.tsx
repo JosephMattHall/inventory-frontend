@@ -6,6 +6,7 @@ import api from "@/lib/api";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
 import { CATEGORIES } from "@/lib/types";
+import AttachmentsSection from "@/components/AttachmentsSection";
 import ImageUploader from "@/components/ImageUploader";
 
 export default function CreateItemPage() {
@@ -18,6 +19,7 @@ export default function CreateItemPage() {
         min_stock: 5,
         location: "",
         image_url: "",
+        attachments: [] as string[],
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
@@ -155,6 +157,14 @@ export default function CreateItemPage() {
                         <ImageUploader
                             onUploaded={(url) => setFormData({ ...formData, image_url: url })}
                             initialUrl={formData.image_url}
+                        />
+                    </div>
+
+                    <div>
+                        <AttachmentsSection
+                            attachments={formData.attachments}
+                            onUpdate={(newAttachments) => setFormData({ ...formData, attachments: newAttachments })}
+                            isEditing={true}
                         />
                     </div>
 

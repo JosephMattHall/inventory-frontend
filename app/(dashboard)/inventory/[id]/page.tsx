@@ -7,6 +7,7 @@ import { ArrowLeft, Minus, Plus, Trash2, Save, MapPin, Zap, Package, Tag } from 
 import Link from "next/link";
 import { Item, CATEGORIES } from "@/lib/types";
 import ImageUploader from "@/components/ImageUploader";
+import AttachmentsSection from "@/components/AttachmentsSection";
 import Image from "next/image";
 
 export default function ItemDetailsPage() {
@@ -72,6 +73,7 @@ export default function ItemDetailsPage() {
                 location: editForm.location,
                 min_stock: editForm.min_stock,
                 stock: editForm.stock,
+                attachments: editForm.attachments,
             });
             setItem(response.data);
             setIsEditing(false);
@@ -292,6 +294,14 @@ export default function ItemDetailsPage() {
                                     />
                                 </div>
 
+                                <div>
+                                    <AttachmentsSection
+                                        attachments={editForm?.attachments || []}
+                                        onUpdate={(newAttachments) => setEditForm({ ...editForm!, attachments: newAttachments })}
+                                        isEditing={true}
+                                    />
+                                </div>
+
                                 <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
                                     <button
                                         onClick={() => {
@@ -341,6 +351,14 @@ export default function ItemDetailsPage() {
                                             {item.description || "No description provided."}
                                         </p>
                                     </div>
+                                </div>
+
+                                <div className="pt-6 border-t border-slate-800">
+                                    <AttachmentsSection
+                                        attachments={item.attachments || []}
+                                        onUpdate={() => { }} // Read-only in view mode
+                                        isEditing={false}
+                                    />
                                 </div>
                             </div>
                         )}

@@ -7,6 +7,7 @@ export interface Item {
     location?: string;
     description?: string;
     image_url?: string;
+    attachments?: string[];
     created_at: string;
     updated_at: string;
 }

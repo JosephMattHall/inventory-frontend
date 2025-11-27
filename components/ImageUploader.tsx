@@ -11,7 +11,15 @@ interface ImageUploaderProps {
 }
 
 export default function ImageUploader({ onUploaded, initialUrl }: ImageUploaderProps) {
-    const [preview, setPreview] = useState<string>(initialUrl || "");
+    const getFullUrl = (url?: string) => {
+        if (!url) return "";
+        if (url.startsWith("/media")) {
+            return `http://localhost:8000${url}`;
+        }
+        return url;
+    };
+
+    const [preview, setPreview] = useState<string>(getFullUrl(initialUrl));
     const [loading, setLoading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -27,9 +35,10 @@ export default function ImageUploader({ onUploaded, initialUrl }: ImageUploaderP
         try {
             const result = await uploadImage(file);
             onUploaded(result.url);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Upload failed", error);
-            alert("Failed to upload image");
+            const message = error.response?.data?.detail || "Failed to upload image";
+            alert(message);
             setPreview(""); // Reset on failure
         } finally {
             setLoading(false);
