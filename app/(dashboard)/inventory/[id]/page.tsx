@@ -344,6 +344,37 @@ export default function ItemDetailsPage() {
                                     </div>
                                 </div>
 
+                                {item.qr_code_url && (
+                                    <div>
+                                        <h3 className="text-lg font-semibold text-white mb-4">QR Code</h3>
+                                        <div className="flex items-center gap-6 p-6 rounded-xl bg-slate-950 border border-slate-800">
+                                            <div className="relative w-32 h-32 bg-white rounded-lg p-2">
+                                                <Image
+                                                    src={`http://localhost:8000${item.qr_code_url}`}
+                                                    alt="Item QR Code"
+                                                    fill
+                                                    className="object-contain"
+                                                    unoptimized
+                                                />
+                                            </div>
+                                            <div>
+                                                <p className="text-slate-400 text-sm mb-3">
+                                                    Scan to quickly access this item.
+                                                </p>
+                                                <a
+                                                    href={`http://localhost:8000${item.qr_code_url}`}
+                                                    download={`qr-${item.name.toLowerCase().replace(/\s+/g, '-')}.png`}
+                                                    className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-lg text-slate-300 hover:text-white hover:border-slate-700 transition-colors text-sm font-medium"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                >
+                                                    Download QR Code
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div>
                                     <h3 className="text-lg font-semibold text-white mb-4">Description</h3>
                                     <div className="p-6 rounded-xl bg-slate-950 border border-slate-800 min-h-[150px]">
