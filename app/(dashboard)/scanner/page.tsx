@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { QrReader } from "react-qr-reader";
+import { Scanner } from "@yudiel/react-qr-scanner";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { ArrowLeft, Package, Plus, Minus, Loader2 } from "lucide-react";
@@ -18,13 +18,13 @@ export default function ScannerPage() {
     const [quantity, setQuantity] = useState(1);
     const [processing, setProcessing] = useState(false);
 
-    const handleScan = async (result: any, error: any) => {
-        if (!!result) {
-            const text = result?.text;
-            if (text && text !== data) {
-                setData(text);
+    const handleScan = async (detectedCodes: any[]) => {
+        if (detectedCodes && detectedCodes.length > 0) {
+            const result = detectedCodes[0].rawValue;
+            if (result && result !== data) {
+                setData(result);
                 // Extract ID from URL: http://localhost:3000/inventory/1 -> 1
-                const match = text.match(/\/inventory\/(\d+)$/);
+                const match = result.match(/\/inventory\/(\d+)$/);
                 if (match) {
                     fetchItem(match[1]);
                 } else {
@@ -82,10 +82,14 @@ export default function ScannerPage() {
             {!item ? (
                 <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden p-4">
                     <div className="aspect-square bg-black rounded-xl overflow-hidden relative">
-                        <QrReader
-                            onResult={handleScan}
+                        <Scanner
+                            onScan={handleScan}
+                            onError={(error: unknown) => console.log(error)}
                             constraints={{ facingMode: "environment" }}
-                            className="w-full h-full object-cover"
+                            styles={{
+                                container: { width: "100%", height: "100%" },
+                                video: { objectFit: "cover" }
+                            }}
                         />
                         <div className="absolute inset-0 border-2 border-emerald-500/50 rounded-xl pointer-events-none"></div>
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -114,8 +118,8 @@ export default function ScannerPage() {
                         <button
                             onClick={() => setMode("out")}
                             className={`py-2 rounded-lg text-sm font-medium transition-all ${mode === "out"
-                                    ? "bg-rose-500/20 text-rose-400 shadow-sm"
-                                    : "text-slate-400 hover:text-slate-200"
+                                ? "bg-rose-500/20 text-rose-400 shadow-sm"
+                                : "text-slate-400 hover:text-slate-200"
                                 }`}
                         >
                             Scan Out (Withdraw)
@@ -123,8 +127,8 @@ export default function ScannerPage() {
                         <button
                             onClick={() => setMode("in")}
                             className={`py-2 rounded-lg text-sm font-medium transition-all ${mode === "in"
-                                    ? "bg-emerald-500/20 text-emerald-400 shadow-sm"
-                                    : "text-slate-400 hover:text-slate-200"
+                                ? "bg-emerald-500/20 text-emerald-400 shadow-sm"
+                                : "text-slate-400 hover:text-slate-200"
                                 }`}
                         >
                             Scan In (Deposit)
@@ -164,8 +168,8 @@ export default function ScannerPage() {
                             onClick={handleSubmit}
                             disabled={processing}
                             className={`flex-1 py-3 rounded-xl font-bold text-slate-950 transition-colors flex items-center justify-center gap-2 ${mode === "in"
-                                    ? "bg-emerald-500 hover:bg-emerald-600"
-                                    : "bg-rose-500 hover:bg-rose-600"
+                                ? "bg-emerald-500 hover:bg-emerald-600"
+                                : "bg-rose-500 hover:bg-rose-600"
                                 }`}
                         >
                             {processing ? (
