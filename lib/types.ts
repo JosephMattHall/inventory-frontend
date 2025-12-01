@@ -8,6 +8,7 @@ export interface Item {
     description?: string;
     image_url?: string;
     attachments?: string[];
+    qr_code_url?: string;
     created_at: string;
     updated_at: string;
 }

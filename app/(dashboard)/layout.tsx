@@ -3,7 +3,17 @@
 import { useAuth } from "@/context/AuthContext";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { LayoutDashboard, Package, ScanLine, LogOut, Archive } from "lucide-react";
+import {
+    LayoutDashboard,
+    Package,
+    Settings,
+    LogOut,
+    Menu,
+    X,
+    ScanLine,
+    Archive
+} from "lucide-react";
+import Link from "next/link";
 
 export default function DashboardLayout({
     children,
@@ -105,6 +115,14 @@ export default function DashboardLayout({
                     </div>
                 </div>
 
+                <Link
+                    href="/scanner"
+                    className="fixed bottom-8 right-8 p-4 bg-emerald-500 text-slate-950 rounded-full shadow-lg shadow-emerald-500/20 hover:bg-emerald-400 hover:scale-105 transition-all z-50 flex items-center justify-center"
+                    title="Open Scanner"
+                >
+                    <ScanLine size={24} />
+                </Link>
+
                 {/* Mobile Bottom Nav */}
                 <div className="md:hidden bg-slate-900 border-t border-slate-800 flex justify-around p-3 pb-safe">
                     <MobileNavButton
@@ -135,8 +153,8 @@ const NavButton = ({ active, onClick, icon, label }: any) => (
     <button
         onClick={onClick}
         className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group ${active
-                ? 'bg-emerald-500/10 text-emerald-400 font-semibold'
-                : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+            ? 'bg-emerald-500/10 text-emerald-400 font-semibold'
+            : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
             }`}
     >
         <div className={`${active ? 'text-emerald-400' : 'text-slate-500 group-hover:text-slate-300'}`}>
