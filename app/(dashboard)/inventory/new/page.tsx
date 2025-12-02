@@ -19,6 +19,7 @@ export default function CreateItemPage() {
         min_stock: 5,
         location: "",
         image_url: "",
+        manufacturer_part_number: "",
         attachments: [] as string[],
     });
     const [loading, setLoading] = useState(false);
@@ -70,6 +71,21 @@ export default function CreateItemPage() {
                             placeholder="e.g., 10kΩ Resistor 1/4W"
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="manufacturer_part_number" className="block text-sm font-medium text-slate-400 mb-1">
+                            Manufacturer Part Number
+                        </label>
+                        <input
+                            type="text"
+                            name="manufacturer_part_number"
+                            id="manufacturer_part_number"
+                            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-mono"
+                            placeholder="e.g., NE555P"
+                            value={formData.manufacturer_part_number || ""}
+                            onChange={(e) => setFormData({ ...formData, manufacturer_part_number: e.target.value })}
                         />
                     </div>
 

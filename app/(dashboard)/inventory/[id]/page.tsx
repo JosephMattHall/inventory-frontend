@@ -67,6 +67,7 @@ export default function ItemDetailsPage() {
         try {
             const response = await api.put(`/items/${params.id}`, {
                 name: editForm.name,
+                manufacturer_part_number: editForm.manufacturer_part_number,
                 category: editForm.category,
                 description: editForm.description,
                 image_url: editForm.image_url,
@@ -241,6 +242,15 @@ export default function ItemDetailsPage() {
                                         />
                                     </div>
                                     <div>
+                                        <label className="block text-sm font-medium text-slate-400 mb-1">Manufacturer Part Number</label>
+                                        <input
+                                            type="text"
+                                            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-emerald-500 focus:outline-none font-mono"
+                                            value={editForm?.manufacturer_part_number || ""}
+                                            onChange={(e) => setEditForm({ ...editForm!, manufacturer_part_number: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
                                         <label className="block text-sm font-medium text-slate-400 mb-1">Category</label>
                                         <select
                                             className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
@@ -332,6 +342,10 @@ export default function ItemDetailsPage() {
                                         <div className="p-4 rounded-xl bg-slate-950 border border-slate-800">
                                             <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Category</p>
                                             <p className="font-medium text-slate-200">{item.category}</p>
+                                        </div>
+                                        <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 col-span-2 md:col-span-1">
+                                            <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Manufacturer Part Number</p>
+                                            <p className="font-medium text-slate-200 font-mono break-all">{item.manufacturer_part_number || "N/A"}</p>
                                         </div>
                                         <div className="p-4 rounded-xl bg-slate-950 border border-slate-800">
                                             <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Location</p>

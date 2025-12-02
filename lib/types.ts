@@ -7,6 +7,7 @@ export interface Item {
     location?: string;
     description?: string;
     image_url?: string;
+    manufacturer_part_number?: string;
     attachments?: string[];
     qr_code_url?: string;
     created_at: string;

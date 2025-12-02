@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Package, PlusCircle, LogOut } from "lucide-react";
+import { LayoutDashboard, Package, PlusCircle, LogOut, Folder } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 const navigation = [
     { name: "Dashboard", href: "/", icon: LayoutDashboard },
     { name: "Inventory", href: "/inventory", icon: Package },
+    { name: "Projects", href: "/projects", icon: Folder },
     { name: "Add Item", href: "/inventory/new", icon: PlusCircle },
 ];
 

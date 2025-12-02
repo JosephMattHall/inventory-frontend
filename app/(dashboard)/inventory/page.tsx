@@ -183,6 +183,9 @@ const InventoryCard: React.FC<InventoryCardProps> = ({ item, onUpdateQuantity, o
                                     {item.category}
                                 </span>
                                 <h3 className="font-semibold text-white text-lg leading-tight group-hover:text-emerald-400 transition-colors">{item.name}</h3>
+                                {item.manufacturer_part_number && (
+                                    <p className="text-xs text-slate-400 font-mono mt-0.5">MPN: {item.manufacturer_part_number}</p>
+                                )}
                                 {item.description && (
                                     <p className="text-xs text-slate-500 mt-1 line-clamp-2">{item.description}</p>
                                 )}
