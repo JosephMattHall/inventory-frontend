@@ -14,6 +14,30 @@ export interface Item {
     updated_at: string;
 }
 
+export interface ItemCreate {
+    name: string;
+    category: string;
+    stock: number;
+    min_stock: number;
+    location?: string;
+    description?: string;
+    image_url?: string;
+    manufacturer_part_number?: string;
+    attachments?: string[];
+}
+
+export interface ItemUpdate {
+    name?: string;
+    category?: string;
+    stock?: number;
+    min_stock?: number;
+    location?: string;
+    description?: string;
+    image_url?: string;
+    manufacturer_part_number?: string;
+    attachments?: string[];
+}
+
 export const CATEGORIES = [
     'Resistors',
     'Capacitors',

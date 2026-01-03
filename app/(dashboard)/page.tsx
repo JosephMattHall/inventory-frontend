@@ -17,6 +17,8 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 
+import { useInventory } from "@/context/InventoryContext";
+
 interface DashboardData {
     total_items: number;
     low_stock_items: any[];
@@ -28,12 +30,18 @@ interface DashboardData {
 }
 
 export default function Dashboard() {
+    const { activeInventory, loading: inventoryLoading } = useInventory();
     const [stats, setStats] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchStats = async () => {
+            if (!activeInventory) {
+                setLoading(false);
+                return;
+            }
             try {
+                setLoading(true);
                 const data = await getDashboardStats();
                 setStats(data);
             } catch (error) {
@@ -43,12 +51,27 @@ export default function Dashboard() {
             }
         };
         fetchStats();
-    }, []);
+    }, [activeInventory]);
 
-    if (loading) {
+    if (inventoryLoading || loading) {
         return (
             <div className="flex items-center justify-center h-full">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+            </div>
+        );
+    }
+
+    if (!activeInventory) {
+        return (
+            <div className="flex flex-col items-center justify-center h-[60vh] text-center space-y-4">
+                <Package size={48} className="text-slate-700" />
+                <h2 className="text-xl font-bold text-white">No Inventory Selected</h2>
+                <p className="text-slate-400 max-w-sm">
+                    Please select an inventory from the sidebar or create a new one to get started.
+                </p>
+                <Link href="/inventory/create" className="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl transition-colors font-medium">
+                    Create Your First Inventory
+                </Link>
             </div>
         );
     }

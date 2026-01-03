@@ -17,31 +17,22 @@ export default function LoginPage() {
         e.preventDefault();
         setError("");
         try {
-            const formData = new FormData();
-            formData.append("username", username);
-            formData.append("password", password);
+            const params = new URLSearchParams();
+            params.append("username", username);
+            params.append("password", password);
 
-            const response = await api.post("/auth/login", formData, {
+            const response = await api.post("/auth/login", params, {
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
                 },
             });
 
-            login(response.data.access_token);
-            // Fetch user details immediately after login to update context
-            const userResponse = await api.get("/users/me", {
-                headers: { Authorization: `Bearer ${response.data.access_token}` },
-            });
-            // We need to update the user in context. 
-            // Since login() in context currently only sets token, I should probably update it to accept user or fetch it.
-            // For now, I'll manually set user in localStorage and reload or rely on the context's useEffect.
-            // Context's useEffect runs on mount.
-            // I'll update the context to expose a setUser or fetchUser method, or just reload.
-            // Reload is simplest for now to ensure clean state.
-            localStorage.setItem("user", JSON.stringify(userResponse.data));
+            await login(response.data.access_token);
+            // Login context handles user fetching and storage
+            // Force reload to ensure all state is fresh
             window.location.href = "/";
         } catch (err: any) {
-            console.error(err);
+            console.error("Login Error:", err.response?.data || err.message);
             setError("Invalid username or password");
         }
     };

@@ -1,41 +1,18 @@
 import axios from "axios";
+import { Item, ItemCreate, ItemUpdate } from "./types";
 
-export interface Item {
+export interface Inventory {
     id: number;
     name: string;
-    category: string;
     description?: string;
-    stock: number;
-    min_stock: number;
-    location?: string;
-    image_url?: string;
-    manufacturer_part_number?: string;
-    attachments: string[];
-    qr_code_url?: string;
+    created_at: string;
+    role: string;
 }
 
-export interface ItemCreate {
-    name: string;
-    category?: string;
-    description?: string;
-    stock?: number;
-    min_stock?: number;
-    location?: string;
-    image_url?: string;
-    manufacturer_part_number?: string;
-    attachments?: string[];
-}
-
-export interface ItemUpdate {
-    name?: string;
-    category?: string;
-    description?: string;
-    stock?: number;
-    min_stock?: number;
-    location?: string;
-    image_url?: string;
-    manufacturer_part_number?: string;
-    attachments?: string[];
+export interface InventoryUser {
+    user_id: number;
+    username: string;
+    role: string;
 }
 
 const api = axios.create({
@@ -45,19 +22,56 @@ const api = axios.create({
     },
 });
 
-// Add a request interceptor to include the token
+// Add a request interceptor to include the token and active inventory ID
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem("token");
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
+
+        const activeInventoryId = localStorage.getItem("activeInventoryId");
+        if (activeInventoryId) {
+            config.headers["X-Inventory-Id"] = activeInventoryId;
+        }
+
         return config;
     },
     (error) => {
         return Promise.reject(error);
     }
 );
+
+// Inventory API
+export const getInventories = async (): Promise<Inventory[]> => {
+    const response = await api.get("/inventories");
+    return response.data;
+};
+
+export const createInventory = async (data: { name: string; description?: string }): Promise<Inventory> => {
+    const response = await api.post("/inventories", data);
+    return response.data;
+};
+
+export const getInventoryMembers = async (inventoryId: number): Promise<InventoryUser[]> => {
+    const response = await api.get(`/inventories/${inventoryId}/users`);
+    return response.data;
+};
+
+export const addInventoryMember = async (inventoryId: number, username: string, role: string = "user") => {
+    const response = await api.post(`/inventories/${inventoryId}/users`, { username, role });
+    return response.data;
+};
+
+export const updateMemberRole = async (inventoryId: number, userId: number, role: string) => {
+    const response = await api.patch(`/inventories/${inventoryId}/users/${userId}/role`, { role });
+    return response.data;
+};
+
+export const removeMember = async (inventoryId: number, userId: number) => {
+    const response = await api.delete(`/inventories/${inventoryId}/users/${userId}`);
+    return response.data;
+};
 
 export const getItems = async (): Promise<Item[]> => {
     const response = await api.get("/items");

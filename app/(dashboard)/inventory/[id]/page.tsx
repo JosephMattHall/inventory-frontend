@@ -10,15 +10,20 @@ import ImageUploader from "@/components/ImageUploader";
 import AttachmentsSection from "@/components/AttachmentsSection";
 import Image from "next/image";
 
+import { useInventory } from "@/context/InventoryContext";
+
 export default function ItemDetailsPage() {
     const params = useParams();
     const router = useRouter();
+    const { activeInventory } = useInventory();
     const [item, setItem] = useState<Item | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [stockChange, setStockChange] = useState(1);
     const [isEditing, setIsEditing] = useState(false);
     const [editForm, setEditForm] = useState<Item | null>(null);
+
+    const isAdmin = activeInventory?.role === "admin";
 
     useEffect(() => {
         fetchItem();
@@ -47,7 +52,7 @@ export default function ItemDetailsPage() {
             setEditForm(response.data);
         } catch (error) {
             console.error("Failed to update stock", error);
-            alert("Failed to update stock. Ensure you have admin privileges.");
+            alert("Failed to update stock. Ensure you have the required permissions.");
         }
     };
 
@@ -117,6 +122,9 @@ export default function ItemDetailsPage() {
                                     <MapPin size={12} /> {item.location}
                                 </span>
                             )}
+                            <span className="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase">
+                                {activeInventory?.role} access
+                            </span>
                         </div>
                         <h1 className="text-3xl font-bold text-white tracking-tight">
                             {item.name}
@@ -125,7 +133,7 @@ export default function ItemDetailsPage() {
                 </div>
 
                 <div className="flex gap-2">
-                    {!isEditing && (
+                    {!isEditing && isAdmin && (
                         <>
                             <button
                                 onClick={() => setIsEditing(true)}

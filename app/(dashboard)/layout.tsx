@@ -11,9 +11,14 @@ import {
     Menu,
     X,
     ScanLine,
-    Archive
+    Archive,
+    ChevronDown,
+    Folder,
+    Users
 } from "lucide-react";
 import Link from "next/link";
+import { useInventory } from "@/context/InventoryContext";
+import { useState } from "react";
 
 export default function DashboardLayout({
     children,
@@ -23,6 +28,10 @@ export default function DashboardLayout({
     const { user, isLoading, logout } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
+    const { inventories, activeInventory, setActiveInventory } = useInventory();
+    const [isInventoryOpen, setIsInventoryOpen] = useState(false);
+
+    const isAdmin = activeInventory?.role === "admin";
 
     useEffect(() => {
         if (!isLoading && !user) {
@@ -56,6 +65,54 @@ export default function DashboardLayout({
                 </div>
 
                 <nav className="flex-1 px-3 py-6 space-y-2">
+                    {/* Inventory Switcher */}
+                    <div className="relative mb-6 px-3">
+                        <button
+                            onClick={() => setIsInventoryOpen(!isInventoryOpen)}
+                            className="flex w-full items-center justify-between rounded-xl bg-slate-800/50 border border-slate-700/50 px-3 py-2.5 text-sm font-medium hover:bg-slate-800 transition-colors"
+                        >
+                            <span className="truncate text-emerald-400">
+                                {activeInventory ? activeInventory.name : "Select Inventory"}
+                            </span>
+                            <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${isInventoryOpen ? 'rotate-180' : ''}`} />
+                        </button>
+
+                        {isInventoryOpen && (
+                            <div className="absolute left-3 right-3 z-50 mt-2 max-h-60 overflow-auto rounded-xl bg-slate-800 border border-slate-700 shadow-2xl shadow-black/50">
+                                <div className="p-1.5 space-y-1">
+                                    {inventories.map((inv) => (
+                                        <button
+                                            key={inv.id}
+                                            onClick={() => {
+                                                setActiveInventory(inv);
+                                                setIsInventoryOpen(false);
+                                            }}
+                                            className={`flex w-full items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${activeInventory?.id === inv.id
+                                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                                : "text-slate-300 hover:bg-slate-700 hover:text-white"
+                                                }`}
+                                        >
+                                            <span className="truncate">{inv.name}</span>
+                                            {activeInventory?.id === inv.id && (
+                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                                            )}
+                                        </button>
+                                    ))}
+                                    <div className="h-px bg-slate-700/50 my-1" />
+                                    <button
+                                        onClick={() => {
+                                            router.push("/inventory/create");
+                                            setIsInventoryOpen(false);
+                                        }}
+                                        className="w-full text-left px-3 py-2 rounded-lg text-sm text-emerald-400 hover:bg-slate-700 transition-colors font-medium"
+                                    >
+                                        + Create Inventory
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
                     <NavButton
                         active={pathname === "/"}
                         onClick={() => router.push("/")}
@@ -69,11 +126,27 @@ export default function DashboardLayout({
                         label="Inventory"
                     />
                     <NavButton
-                        active={pathname === "/inventory/new"}
-                        onClick={() => router.push("/inventory/new")}
-                        icon={<ScanLine size={22} />}
-                        label="Add Item"
+                        active={pathname === "/projects"}
+                        onClick={() => router.push("/projects")}
+                        icon={<Folder size={22} />}
+                        label="Projects"
                     />
+                    {isAdmin && (
+                        <>
+                            <NavButton
+                                active={pathname === "/inventory/new"}
+                                onClick={() => router.push("/inventory/new")}
+                                icon={<ScanLine size={22} />}
+                                label="Add Item"
+                            />
+                            <NavButton
+                                active={pathname === "/members"}
+                                onClick={() => router.push("/members")}
+                                icon={<Users size={22} />}
+                                label="Manage Members"
+                            />
+                        </>
+                    )}
                 </nav>
 
                 <div className="p-4 border-t border-slate-800">

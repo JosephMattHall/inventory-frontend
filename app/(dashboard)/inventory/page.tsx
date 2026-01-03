@@ -2,13 +2,16 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { Item, CATEGORIES } from "@/lib/types";
-import { Search, Filter, Plus, Minus, Trash2, MapPin, Zap } from "lucide-react";
+import { Search, Filter, Plus, Minus, Trash2, MapPin, Zap, Package } from "lucide-react";
 import api from "@/lib/api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 
+import { useInventory } from "@/context/InventoryContext";
+
 export default function InventoryPage() {
+    const { activeInventory, loading: inventoryLoading } = useInventory();
     const [items, setItems] = useState<Item[]>([]);
     const [search, setSearch] = useState("");
     const [selectedCategory, setSelectedCategory] = useState<string>("All");
@@ -16,12 +19,19 @@ export default function InventoryPage() {
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
+    const isAdmin = activeInventory?.role === "admin";
+
     useEffect(() => {
-        fetchItems();
-    }, []);
+        if (activeInventory) {
+            fetchItems();
+        } else if (!inventoryLoading) {
+            setLoading(false);
+        }
+    }, [activeInventory, inventoryLoading]);
 
     const fetchItems = async () => {
         try {
+            setLoading(true);
             const response = await api.get("/items");
             setItems(response.data);
         } catch (error) {
@@ -41,18 +51,17 @@ export default function InventoryPage() {
     }, [items, search, selectedCategory]);
 
     const handleUpdateQuantity = async (id: number, delta: number) => {
-        const item = items.find(i => i.id === id);
-        if (!item) return;
-
-        const newStock = Math.max(0, item.stock + delta);
-
         try {
-            await api.put(`/items/${id}`, { stock: newStock });
+            const action = delta > 0 ? "add" : "remove";
+            const amount = Math.abs(delta);
+            const response = await api.post(`/items/${id}/${action}/${amount}`);
+
             setItems(prev => prev.map(i =>
-                i.id === id ? { ...i, stock: newStock } : i
+                i.id === id ? response.data : i
             ));
         } catch (error) {
             console.error("Failed to update quantity", error);
+            alert("Failed to update quantity. Check your connection and permissions.");
         }
     };
 
@@ -67,16 +76,36 @@ export default function InventoryPage() {
         }
     };
 
-    if (loading) {
+    if (inventoryLoading || loading) {
         return <div className="flex items-center justify-center h-64">
             <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-emerald-500"></div>
         </div>;
     }
 
+    if (!activeInventory) {
+        return (
+            <div className="flex flex-col items-center justify-center h-[60vh] text-center space-y-4">
+                <Package size={48} className="text-slate-700" />
+                <h2 className="text-xl font-bold text-white">No Inventory Selected</h2>
+                <p className="text-slate-400 max-w-sm">
+                    Select an inventory to view and manage your items.
+                </p>
+                <Link href="/inventory/create" className="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl transition-colors font-medium">
+                    Create New Inventory
+                </Link>
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6 h-full flex flex-col">
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between shrink-0">
-                <h2 className="text-2xl font-bold text-white self-start md:self-center">Inventory</h2>
+                <div className="flex items-center gap-4">
+                    <h2 className="text-2xl font-bold text-white">Inventory</h2>
+                    <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-400 text-xs font-bold uppercase">
+                        {activeInventory.role} access
+                    </span>
+                </div>
 
                 <div className="flex w-full md:w-auto gap-2">
                     <div className="relative flex-1 md:w-64">
@@ -95,6 +124,15 @@ export default function InventoryPage() {
                     >
                         <Filter size={20} />
                     </button>
+                    {isAdmin && (
+                        <Link
+                            href="/inventory/new"
+                            className="p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
+                            title="Add Item"
+                        >
+                            <Plus size={20} />
+                        </Link>
+                    )}
                 </div>
             </div>
 
@@ -122,13 +160,15 @@ export default function InventoryPage() {
                 {filteredItems.length === 0 ? (
                     <div className="h-64 flex flex-col items-center justify-center text-slate-500 gap-4 border-2 border-dashed border-slate-800 rounded-2xl">
                         <Zap size={48} className="text-slate-700" />
-                        <p>No components found.</p>
-                        <button
-                            onClick={() => router.push('/inventory/new')}
-                            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-900 font-medium rounded-lg transition-colors"
-                        >
-                            Add Your First Item
-                        </button>
+                        <p>No components found in this inventory.</p>
+                        {isAdmin && (
+                            <button
+                                onClick={() => router.push('/inventory/new')}
+                                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-900 font-medium rounded-lg transition-colors"
+                            >
+                                Add Your First Item
+                            </button>
+                        )}
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -138,6 +178,7 @@ export default function InventoryPage() {
                                 item={item}
                                 onUpdateQuantity={handleUpdateQuantity}
                                 onDelete={handleDelete}
+                                isAdmin={isAdmin}
                             />
                         ))}
                     </div>
@@ -151,10 +192,11 @@ interface InventoryCardProps {
     item: Item;
     onUpdateQuantity: (id: number, delta: number) => void;
     onDelete: (id: number) => void;
+    isAdmin: boolean;
 }
 
 
-const InventoryCard: React.FC<InventoryCardProps> = ({ item, onUpdateQuantity, onDelete }) => {
+const InventoryCard: React.FC<InventoryCardProps> = ({ item, onUpdateQuantity, onDelete, isAdmin }) => {
     const isLowStock = item.stock <= item.min_stock;
 
     const imageUrl = item.image_url?.startsWith("/media")
@@ -186,9 +228,6 @@ const InventoryCard: React.FC<InventoryCardProps> = ({ item, onUpdateQuantity, o
                                 {item.manufacturer_part_number && (
                                     <p className="text-xs text-slate-400 font-mono mt-0.5">MPN: {item.manufacturer_part_number}</p>
                                 )}
-                                {item.description && (
-                                    <p className="text-xs text-slate-500 mt-1 line-clamp-2">{item.description}</p>
-                                )}
                             </div>
                         </div>
                     </div>
@@ -199,9 +238,9 @@ const InventoryCard: React.FC<InventoryCardProps> = ({ item, onUpdateQuantity, o
                 </div>
             </Link>
 
-            <div className="flex items-center gap-2 text-xs text-slate-500 mb-6">
-                <MapPin size={12} />
-                <span>{item.location || 'Unassigned'}</span>
+            <div className="flex items-center gap-2 text-xs text-slate-500 mb-6 font-medium">
+                <MapPin size={12} className="text-slate-600" />
+                <span className="text-slate-400">{item.location || 'Unassigned'}</span>
                 {isLowStock && (
                     <span className="ml-auto text-amber-500 font-bold flex items-center gap-1">
                         <Zap size={10} /> Low Stock (Min: {item.min_stock})
@@ -213,26 +252,28 @@ const InventoryCard: React.FC<InventoryCardProps> = ({ item, onUpdateQuantity, o
                 <div className="flex items-center bg-slate-950 rounded-lg p-1 border border-slate-800">
                     <button
                         onClick={() => onUpdateQuantity(item.id, -1)}
-                        className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-rose-500/20 hover:text-rose-500 text-slate-400 transition-colors"
+                        className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-rose-500/20 hover:text-rose-500 text-slate-400 transition-colors px-0"
                     >
                         <Minus size={16} />
                     </button>
                     <div className="w-px h-4 bg-slate-800 mx-1"></div>
                     <button
                         onClick={() => onUpdateQuantity(item.id, 1)}
-                        className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-emerald-500/20 hover:text-emerald-500 text-slate-400 transition-colors"
+                        className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-emerald-500/20 hover:text-emerald-500 text-slate-400 transition-colors px-0"
                     >
                         <Plus size={16} />
                     </button>
                 </div>
 
-                <button
-                    onClick={() => onDelete(item.id)}
-                    className="text-slate-600 hover:text-rose-500 transition-colors p-2"
-                    title="Delete Item"
-                >
-                    <Trash2 size={16} />
-                </button>
+                {isAdmin && (
+                    <button
+                        onClick={() => onDelete(item.id)}
+                        className="text-slate-600 hover:text-rose-500 transition-colors p-2"
+                        title="Delete Item"
+                    >
+                        <Trash2 size={16} />
+                    </button>
+                )}
             </div>
         </div>
     );
