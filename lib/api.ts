@@ -163,9 +163,7 @@ export const addProjectItem = async (projectId: number, data: ProjectItemCreate)
 };
 
 export const updateProjectStatus = async (projectId: number, status: string, returnItems: boolean = false): Promise<Project> => {
-    const response = await api.put(`/projects/${projectId}/status`, { status }, {
-        params: { return_items: returnItems }
-    });
+    const response = await api.put(`/projects/${projectId}`, { status, return_items: returnItems });
     return response.data;
 };
 
