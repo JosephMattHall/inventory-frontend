@@ -14,7 +14,8 @@ import {
     Archive,
     ChevronDown,
     Folder,
-    Users
+    Users,
+    ShieldCheck
 } from "lucide-react";
 import Link from "next/link";
 import { useInventory } from "@/context/InventoryContext";
@@ -146,6 +147,14 @@ export default function DashboardLayout({
                                 label="Manage Members"
                             />
                         </>
+                    )}
+                    {user.is_superuser && (
+                        <NavButton
+                            active={pathname.startsWith("/super-admin")}
+                            onClick={() => router.push("/super-admin")}
+                            icon={<ShieldCheck size={22} />}
+                            label="Platform Admin"
+                        />
                     )}
                 </nav>
 

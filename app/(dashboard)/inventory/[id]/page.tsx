@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
-import { ArrowLeft, Minus, Plus, Trash2, Save, MapPin, Zap, Package, Tag } from "lucide-react";
+import { ArrowLeft, Minus, Plus, Trash2, Save, MapPin, Zap, Package, Tag, Printer } from "lucide-react";
 import Link from "next/link";
 import { Item, CATEGORIES } from "@/lib/types";
 import ImageUploader from "@/components/ImageUploader";
@@ -383,15 +383,31 @@ export default function ItemDetailsPage() {
                                                 <p className="text-slate-400 text-sm mb-3">
                                                     Scan to quickly access this item.
                                                 </p>
-                                                <a
-                                                    href={`http://localhost:8000${item.qr_code_url}`}
-                                                    download={`qr-${item.name.toLowerCase().replace(/\s+/g, '-')}.png`}
-                                                    className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-lg text-slate-300 hover:text-white hover:border-slate-700 transition-colors text-sm font-medium"
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                >
-                                                    Download QR Code
-                                                </a>
+                                                <div className="flex flex-wrap gap-2">
+                                                    <a
+                                                        href={`http://localhost:8000${item.qr_code_url}`}
+                                                        download={`qr-${item.name.toLowerCase().replace(/\s+/g, '-')}.png`}
+                                                        className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-lg text-slate-300 hover:text-white hover:border-slate-700 transition-colors text-sm font-medium"
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                    >
+                                                        Download QR
+                                                    </a>
+
+                                                    <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-lg p-1">
+                                                        <span className="text-[10px] font-bold text-slate-500 px-2 uppercase">Print:</span>
+                                                        {['small', 'medium', 'large'].map((size) => (
+                                                            <button
+                                                                key={size}
+                                                                onClick={() => window.open(`http://localhost:8000/labels/${item.id}?size=${size}`, '_blank')}
+                                                                className="px-2 py-1 hover:bg-emerald-500/10 hover:text-emerald-400 text-slate-400 rounded transition-colors text-xs font-bold uppercase"
+                                                            >
+                                                                {size[0]}
+                                                            </button>
+                                                        ))}
+                                                        <Printer size={14} className="mx-2 text-slate-500" />
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

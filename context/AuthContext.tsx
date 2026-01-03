@@ -4,9 +4,10 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import api from "@/lib/api";
 import { useRouter } from "next/navigation";
 
-interface User {
+export interface User {
     id: number;
     username: string;
+    is_superuser: boolean;
 }
 
 interface AuthContextType {
